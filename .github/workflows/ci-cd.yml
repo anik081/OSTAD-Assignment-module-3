@@ -2,8 +2,10 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,36 +16,36 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
         run: |
-          npm test > test-results.txt || true
+          mkdir -p test-results
+          npm test > test-results/results.txt
 
       - name: Upload test results
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: test-results.txt
-
+          path: test-results/results.txt
 
   deploy:
     needs: test
-    runs-on: [self-hosted, linux, node]
+    runs-on: self-hosted  # Assumes runner is configured
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download test results
+      - name: Download test artifact
         uses: actions/download-artifact@v3
         with:
           name: test-results
 
-      - name: Display test results
-        run: cat test-results.txt
+      - name: Show test result content
+        run: cat results.txt
 
       - name: Install dependencies
         run: npm install
