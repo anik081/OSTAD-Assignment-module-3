@@ -21,12 +21,23 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Check for tests
+        id: check-tests
+        run: |
+          if [ -f package.json ] && grep -q '"test":' package.json; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run tests
+        if: steps.check-tests.outputs.has_tests == 'true'
         run: |
           mkdir -p test-results
           npm test > test-results/results.txt
 
       - name: Upload test results
+        if: steps.check-tests.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-results
@@ -34,17 +45,19 @@ jobs:
 
   deploy:
     needs: test
-    runs-on: self-hosted  # Assumes runner is configured
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Download test artifact
+        if: needs.test.outputs.has_tests == 'true'
         uses: actions/download-artifact@v4
         with:
           name: test-results
 
       - name: Show test result content
+        if: needs.test.outputs.has_tests == 'true'
         run: cat results.txt
 
       - name: Install dependencies
