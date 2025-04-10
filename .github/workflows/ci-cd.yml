@@ -70,5 +70,5 @@ jobs:
       - name: Restart application
         shell: cmd
         run: |
-          pm2 stop app || ver > nul
-          pm2 start index.js --name app
+          "%APPDATA%\npm\pm2" stop app || ver > nul
+          "%APPDATA%\npm\pm2" start index.js --name app
