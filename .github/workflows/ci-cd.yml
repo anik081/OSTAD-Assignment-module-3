@@ -63,7 +63,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Start application
+      - name: Install PM2 globally
+        shell: cmd
+        run: npm install -g pm2
+
+      - name: Restart application
+        shell: cmd
         run: |
-          pm2 stop app || true
+          pm2 stop app || ver > nul
           pm2 start index.js --name app
